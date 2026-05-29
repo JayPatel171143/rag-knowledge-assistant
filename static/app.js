@@ -2,45 +2,83 @@ const askBtn = document.getElementById("askBtn");
 
 askBtn.addEventListener("click", async () => {
 
-    const pdfFile = document.getElementById("pdfFile").files[0];
+    const pdfFiles = document.getElementById("pdfFile").files;
+
     const question = document.getElementById("question").value;
 
-    const loading = document.getElementById("loading");
     const answerDiv = document.getElementById("answer");
 
-    if (!pdfFile || !question) {
-        alert("Please upload PDF and ask a question.");
+    // -------- VALIDATION --------
+
+    if (pdfFiles.length === 0 || !question) {
+
+        alert("Please upload PDFs and ask a question.");
+
         return;
     }
 
-    loading.classList.remove("hidden");
+    // -------- RESET ANSWER --------
 
-    answerDiv.innerHTML = "";
+    answerDiv.innerHTML = "Thinking...\n\n";
+
+    // -------- FORM DATA --------
 
     const formData = new FormData();
 
-    formData.append("pdf", pdfFile);
+    // -------- ADD MULTIPLE PDFs --------
+
+    for (let file of pdfFiles) {
+
+        formData.append("pdfs", file);
+
+    }
+
     formData.append("question", question);
 
     try {
 
+        // -------- SEND REQUEST --------
+
         const response = await fetch("/ask", {
+
             method: "POST",
+
             body: formData
+
         });
 
-        const data = await response.json();
+        // -------- STREAM READER --------
 
-        answerDiv.innerHTML = data.answer;
+        const reader = response.body.getReader();
+
+        const decoder = new TextDecoder();
+
+        // -------- CLEAR THINKING TEXT --------
+
+        answerDiv.innerHTML = "";
+
+        // -------- STREAM LOOP --------
+
+        while (true) {
+
+            const { done, value } = await reader.read();
+
+            if (done) break;
+
+            // -------- DECODE CHUNK --------
+
+            const chunk = decoder.decode(value, { stream: true });
+
+            // -------- APPEND TEXT --------
+
+            answerDiv.innerHTML += chunk;
+        }
 
     } catch (error) {
 
-        answerDiv.innerHTML = "Error processing request.";
-
         console.error(error);
 
+        answerDiv.innerHTML = "Error processing request.";
     }
-
-    loading.classList.add("hidden");
 
 });
