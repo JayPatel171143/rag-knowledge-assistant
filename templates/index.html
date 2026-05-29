@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Knowledge Assistant</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="bg-gray-950 text-white min-h-screen">
+
+    <div class="max-w-4xl mx-auto p-10">
+
+        <h1 class="text-5xl font-bold mb-6">
+            📘 Personal Knowledge Base Assistant
+        </h1>
+
+        <p class="text-gray-400 mb-10">
+            Upload PDFs and ask questions using local AI.
+        </p>
+
+        <!-- Upload Section -->
+
+        <div class="mb-6">
+
+            <label class="block mb-2 text-lg">
+                Upload PDF
+            </label>
+
+            <input
+                type="file"
+                id="pdfFile"
+                class="w-full p-3 rounded bg-gray-800 border border-gray-700"
+            >
+
+        </div>
+
+        <!-- Question Input -->
+
+        <div class="mb-6">
+
+            <label class="block mb-2 text-lg">
+                Ask a Question
+            </label>
+
+            <input
+                type="text"
+                id="question"
+                placeholder="What is RAG?"
+                class="w-full p-4 rounded bg-gray-800 border border-gray-700"
+            >
+
+        </div>
+
+        <!-- Button -->
+
+        <button
+            id="askBtn"
+            class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded text-lg"
+        >
+            Ask AI
+        </button>
+
+        <!-- Loading -->
+
+        <div
+            id="loading"
+            class="hidden mt-6 text-yellow-400"
+        >
+            Processing...
+        </div>
+
+        <!-- Answer -->
+
+        <div
+            id="answer"
+            class="mt-10 p-6 rounded bg-gray-900 border border-gray-700 whitespace-pre-wrap"
+        >
+        </div>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+
+</body>
+
+</html>
