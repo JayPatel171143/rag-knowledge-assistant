@@ -2,7 +2,7 @@
 
 A local-first Retrieval-Augmented Generation (RAG) app that lets you upload one or more PDF documents, ask questions in natural language, and get streamed answers powered by your local Ollama model.
 
-> This project is configured to run with **Ollama + Llama 3** locally, so you can use it without sending your documents to a cloud AI service.
+> This project is designed to run with **Ollama + Llama 3** locally, so you can use it without sending your documents to a cloud AI service.
 
 ## Features
 
@@ -125,17 +125,12 @@ rag-knowledge-assistant/
 ├── app.py
 ├── rag_pipeline.py
 ├── requirements.txt
+├── README.md
 ├── templates/
 │   └── index.html
-├── static/
-│   ├── app.js
-│   └── style.css
-├── data/
-│   └── sample.pdf
-└── tests/
-    ├── pdf_rag_test.py
-    ├── chroma_test.py
-    └── embedding_test.py
+└── static/
+    ├── app.js
+    └── style.css
 ```
 
 ## Configuration notes
