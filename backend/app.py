@@ -10,8 +10,7 @@ from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
+from langchain_community.retrievers import TFIDFRetriever
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -27,15 +26,6 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-)
-
-# ---------------- EMBEDDINGS ----------------
-# We use HuggingFaceInferenceAPIEmbeddings to run the embedding model remotely.
-# This requires 0MB of local RAM on Render, preventing Out of Memory crashes.
-# Note: You can optionally add a free HUGGINGFACEHUB_API_TOKEN in Render env vars for higher rate limits.
-embedding_model = HuggingFaceInferenceAPIEmbeddings(
-    api_key=os.getenv("HUGGINGFACEHUB_API_TOKEN") or "",
-    model_name="sentence-transformers/all-MiniLM-L6-v2"
 )
 
 # ---------------- GROQ STREAMING ----------------
@@ -133,22 +123,19 @@ def process_rag_request(pdfs: List[UploadFile], question: str):
         yield "Error: No text content could be extracted from the uploaded PDFs."
         return
 
-    # Use a unique collection name for each request to ensure isolated vector memory
-    import uuid
-    collection_name = f"col_{uuid.uuid4().hex}"
-
     try:
-        yield "[System: Creating in-memory vector database...]\n"
-        logger.info(f"Indexing {len(all_chunks)} chunks into ChromaDB collection {collection_name}...")
-        vector_db = Chroma.from_texts(
+        yield "[System: Indexing document text...]\n"
+        logger.info(f"Indexing {len(all_chunks)} chunks using TF-IDF...")
+        
+        # Initialize the TFIDFRetriever
+        retriever = TFIDFRetriever.from_texts(
             texts=all_chunks,
-            embedding=embedding_model,
             metadatas=all_metadatas,
-            collection_name=collection_name
+            k=6  # Retrieve k=6 chunks for better coverage of multiple documents
         )
 
-        # Retrieve k=6 chunks for better coverage of multiple documents
-        results = vector_db.similarity_search(question, k=6)
+        # Retrieve relevant chunks
+        results = retriever.invoke(question)
         
         context_parts = []
         for result in results:

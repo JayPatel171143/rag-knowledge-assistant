@@ -3,6 +3,6 @@ uvicorn
 pymupdf
 langchain-text-splitters
 langchain-community
-chromadb
+scikit-learn
 httpx
 python-multipart
