@@ -1,84 +1,90 @@
 # RAG Knowledge Assistant
 
-A local-first Retrieval-Augmented Generation (RAG) app that lets you upload one or more PDF documents, ask questions in natural language, and get streamed answers powered by your local Ollama model.
+A full-stack **Retrieval-Augmented Generation (RAG)** assistant that lets users upload PDF documents, ask natural-language questions, and get context-aware AI answers.
 
-> This project is designed to run with **Ollama + Llama 3** locally, so you can use it without sending your documents to a cloud AI service.
+🌐 **Live Demo:** [rag17.vercel.app](https://rag17.vercel.app)
+
+---
+
+## Overview
+
+RAG Knowledge Assistant combines a Python backend RAG pipeline with a modern frontend to deliver an interactive document-questioning experience.
+
+At a high level, the app:
+- accepts PDF uploads,
+- extracts and chunks text,
+- retrieves relevant context using vector search,
+- generates answers with an LLM,
+- and streams responses to the UI.
+
+This repo includes both backend and frontend code, with deployment-ready configuration.
+
+---
 
 ## Features
 
-- Upload **multiple PDF files** at once
-- Extract and chunk PDF text locally
-- Build a temporary vector index with **Chroma**
-- Retrieve the most relevant passages for each question
-- Generate answers with **Llama 3 via Ollama**
-- Stream responses back to the browser in real time
-- Clean web UI built with **FastAPI** + **Jinja2** + **Tailwind CSS**
+- 📄 Upload one or multiple PDF files
+- 🔎 Semantic retrieval over uploaded content
+- 🤖 LLM-powered answers grounded in document context
+- ⚡ Real-time/streamed response experience
+- 🧠 Embedding + vector search workflow for retrieval quality
+- 🌍 Hosted frontend for easy access and demos
 
-## How it works
+---
 
-1. You upload PDF documents in the browser.
-2. The backend extracts text using **PyMuPDF**.
-3. The text is split into chunks with `RecursiveCharacterTextSplitter`.
-4. Chunks are embedded using `sentence-transformers/all-MiniLM-L6-v2`.
-5. Chroma retrieves the most relevant chunks for your question.
-6. The selected context is sent to **Ollama Llama 3**.
-7. The answer is streamed back to the UI.
+## Tech Stack
 
-## Tech stack
+Based on repository language composition and project structure:
 
-- **Backend:** FastAPI, Uvicorn
-- **RAG pipeline:** LangChain, ChromaDB, Sentence Transformers
-- **PDF extraction:** PyMuPDF
-- **Local LLM:** Ollama with `llama3`
-- **Frontend:** HTML, JavaScript, Tailwind CSS
+- **JavaScript (47.7%)** – Frontend interactions/app logic
+- **CSS (37.9%)** – UI styling
+- **Python (13.1%)** – Backend + RAG pipeline
+- **HTML (1.3%)** – Page structure/templates
 
-## Prerequisites
+Likely core libraries/services used in the project:
+- FastAPI / Python API services
+- LangChain + Chroma (or equivalent vector retrieval stack)
+- Ollama / local or configurable LLM backend
+- Vercel-hosted frontend
 
-Before running the project locally, make sure you have:
+---
 
-- **Python 3.10+** installed
-- **Ollama** installed and running locally
-- The **Llama 3** model pulled in Ollama
+## Repository Structure
 
-### Install Ollama and pull Llama 3
-
-If you have not already done so, install Ollama from:
-
-https://ollama.com/
-
-Then pull the model:
-
-```bash
-ollama pull llama3
+```text
+rag-knowledge-assistant/
+├── app.py
+├── rag_pipeline.py
+├── requirements.txt
+├── frontend/
+├── static/
+├── templates/
+└── README.md
 ```
 
-Make sure Ollama is running before starting the app.
+---
 
-## Installation
+## Getting Started (Local)
 
-### 1) Clone the repository
+### 1) Clone
 
 ```bash
 git clone https://github.com/JayPatel171143/rag-knowledge-assistant.git
 cd rag-knowledge-assistant
 ```
 
-### 2) Create a virtual environment
+### 2) Create & activate virtual environment
 
 ```bash
 python -m venv .venv
 ```
 
-Activate it:
-
 - **Windows**
-
 ```bash
 .venv\Scripts\activate
 ```
 
-- **macOS / Linux**
-
+- **macOS/Linux**
 ```bash
 source .venv/bin/activate
 ```
@@ -89,131 +95,74 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Run locally
-
-Start the FastAPI app with Uvicorn:
+### 4) Run backend
 
 ```bash
 uvicorn app:app --reload
 ```
 
-Then open your browser at:
+Backend default URL:
 
 ```text
 http://127.0.0.1:8000
 ```
 
+---
+
 ## Usage
 
-1. Open the app in your browser.
-2. Upload one or more PDF files.
-3. Type a question about the uploaded documents.
-4. Click **Ask AI**.
-5. Wait for the streamed response.
+1. Open the app (local or hosted).
+2. Upload one or more PDF documents.
+3. Ask a question about the uploaded content.
+4. Review the generated response.
 
-### Example questions
+Example prompts:
+- “Summarize this document in 5 bullet points.”
+- “What are the key action items mentioned?”
+- “Compare the major findings across these PDFs.”
 
-- What is the main topic of the document?
-- Summarize the key findings in the uploaded PDFs.
-- What does the document say about deployment?
-- List the action items mentioned in the report.
+---
 
-## Project structure
+## Deployment
 
-```text
-rag-knowledge-assistant/
-├── app.py
-├── rag_pipeline.py
-├── requirements.txt
-├── README.md
-├── templates/
-│   └── index.html
-└── static/
-    ├── app.js
-    └── style.css
-```
+- ✅ Live app: **[https://rag17.vercel.app](https://rag17.vercel.app)**
+- Repository: **[JayPatel171143/rag-knowledge-assistant](https://github.com/JayPatel171143/rag-knowledge-assistant)**
 
-## Configuration notes
+If you're deploying updates, ensure frontend environment variables and backend API URLs are aligned.
 
-- The model name used in code is `llama3`.
-- If your Ollama model has a different tag, update this line in `rag_pipeline.py`:
-
-```python
-ollama.chat(model="llama3", ...)
-```
-
-- The embedding model is:
-
-```python
-sentence-transformers/all-MiniLM-L6-v2
-```
-
-- Chroma is currently used in-memory for each request.
+---
 
 ## Troubleshooting
 
-### Ollama connection issues
+- Ensure Python version is compatible with `requirements.txt`
+- Verify any LLM service (local or remote) is running and reachable
+- Check PDF text is extractable (scanned/image-only PDFs may require OCR)
+- Confirm CORS/backend URL settings when connecting frontend + backend
 
-If the app cannot reach Ollama:
+---
 
-- Confirm Ollama is running
-- Confirm `llama3` is installed:
+## Roadmap Ideas
 
-```bash
-ollama list
-```
+- Persistent vector store across sessions
+- Source citation highlighting in answers
+- OCR support for scanned PDFs
+- Authentication + user-specific document spaces
+- Conversation history and export
 
-- Test Ollama directly:
+---
 
-```bash
-ollama run llama3
-```
+## Contributing
 
-### Slow first response
+Contributions are welcome.
 
-The first request may take longer because:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Open a pull request
 
-- the embedding model is loaded
-- PDFs are processed and chunked
-- Chroma builds the temporary vector store
-- Ollama initializes the model
-
-### Empty or weak answers
-
-If answers are not good:
-
-- Make sure the PDFs contain selectable text, not just images
-- Try shorter, more specific questions
-- Upload fewer, more relevant PDFs
-- Increase or tune chunking parameters in `rag_pipeline.py`
-
-## Limitations
-
-- PDF files must contain extractable text for best results
-- The vector store is rebuilt for each request
-- Answers depend on the content retrieved from the uploaded documents
-- Large PDFs may require more processing time
-
-## Future improvements
-
-- Persist Chroma embeddings between sessions
-- Add citation highlighting in the UI
-- Support scanned PDFs with OCR
-- Add document upload history
-- Improve prompt formatting and source tracing
+---
 
 ## License
 
-No license file is currently included in the repository. Add one if you want to define how others may use the project.
-
-## Acknowledgements
-
-Built with:
-
-- FastAPI
-- LangChain
-- ChromaDB
-- Ollama
-- Llama 3
-- Sentence Transformers
-- PyMuPDF
+No license file is currently defined in this repository.
+If you plan to open-source for reuse, add a `LICENSE` file (e.g., MIT).
