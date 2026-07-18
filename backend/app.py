@@ -9,10 +9,8 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
-
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import HuggingFaceEmbeddings
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -31,10 +29,40 @@ app.add_middleware(
 )
 
 # ---------------- EMBEDDINGS ----------------
-# We initialize the model. sentence-transformers/all-MiniLM-L6-v2 runs locally.
-embedding_model = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-MiniLM-L6-v2"
-)
+class GroqEmbeddings:
+    """
+    Custom LangChain-compatible embeddings class calling Groq's nomic-embed-text-v1.5 API.
+    """
+    def __init__(self):
+        self.url = "https://api.groq.com/openai/v1/embeddings"
+
+    def _embed(self, texts: List[str]) -> List[List[float]]:
+        api_key = os.getenv("GROQ_API_KEY")
+        if not api_key:
+            raise Exception("GROQ_API_KEY environment variable is missing.")
+        
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "input": texts,
+            "model": "nomic-embed-text-v1.5"
+        }
+        with httpx.Client() as client:
+            response = client.post(self.url, headers=headers, json=payload, timeout=30.0)
+            if response.status_code != 200:
+                raise Exception(f"Groq embedding failed: {response.text}")
+            data = response.json()
+            return [item["embedding"] for item in data["data"]]
+
+    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        return self._embed(texts)
+
+    def embed_query(self, text: str) -> List[float]:
+        return self._embed([text])[0]
+
+embedding_model = GroqEmbeddings()
 
 # ---------------- GROQ STREAMING ----------------
 def stream_groq(prompt: str, api_key: str):
