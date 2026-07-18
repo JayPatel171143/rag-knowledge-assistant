@@ -9,9 +9,9 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
-from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
+from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -34,7 +34,7 @@ app.add_middleware(
 # This requires 0MB of local RAM on Render, preventing Out of Memory crashes.
 # Note: You can optionally add a free HUGGINGFACEHUB_API_TOKEN in Render env vars for higher rate limits.
 embedding_model = HuggingFaceInferenceAPIEmbeddings(
-    api_key=os.getenv("HUGGINGFACEHUB_API_TOKEN"),
+    api_key=os.getenv("HUGGINGFACEHUB_API_TOKEN") or "",
     model_name="sentence-transformers/all-MiniLM-L6-v2"
 )
 
