@@ -560,7 +560,7 @@ function App() {
               <h5 className="footer-links-title">Connect</h5>
               <div className="footer-links">
                 <a href="https://github.com/JayPatel171143" target="_blank" rel="noreferrer" className="footer-link-item">GitHub</a>
-                <a href="https://linkedin.com/in/jay-patel" target="_blank" rel="noreferrer" className="footer-link-item">LinkedIn</a>
+                <a href="https://shorturl.at/WUQm5" target="_blank" rel="noreferrer" className="footer-link-item">LinkedIn</a>
                 <a href="mailto:jaynp17@gmail.com" className="footer-link-item">Email</a>
               </div>
             </div>
