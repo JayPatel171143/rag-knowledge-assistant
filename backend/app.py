@@ -163,25 +163,26 @@ def process_rag_request(pdfs: List[UploadFile], question: str):
     import uuid
     collection_name = f"col_{uuid.uuid4().hex}"
 
-    yield "[System: Creating in-memory vector database...]\n"
-    logger.info(f"Indexing {len(all_chunks)} chunks into ChromaDB collection {collection_name}...")
-    vector_db = Chroma.from_texts(
-        texts=all_chunks,
-        embedding=embedding_model,
-        metadatas=all_metadatas,
-        collection_name=collection_name
-    )
+    try:
+        yield "[System: Creating in-memory vector database...]\n"
+        logger.info(f"Indexing {len(all_chunks)} chunks into ChromaDB collection {collection_name}...")
+        vector_db = Chroma.from_texts(
+            texts=all_chunks,
+            embedding=embedding_model,
+            metadatas=all_metadatas,
+            collection_name=collection_name
+        )
 
-    # Retrieve k=6 chunks for better coverage of multiple documents
-    results = vector_db.similarity_search(question, k=6)
-    
-    context_parts = []
-    for result in results:
-        source = result.metadata.get("source", "Unknown Document")
-        context_parts.append(f"[Source Document: {source}]\n{result.page_content}")
-    context = "\n\n".join(context_parts)
+        # Retrieve k=6 chunks for better coverage of multiple documents
+        results = vector_db.similarity_search(question, k=6)
+        
+        context_parts = []
+        for result in results:
+            source = result.metadata.get("source", "Unknown Document")
+            context_parts.append(f"[Source Document: {source}]\n{result.page_content}")
+        context = "\n\n".join(context_parts)
 
-    prompt = f"""You are a helpful AI assistant.
+        prompt = f"""You are a helpful AI assistant.
 
 Answer the question based ONLY on the provided context from the uploaded documents.
 Refer to specific documents by name (e.g. "According to file1.pdf...") when answering.
@@ -195,17 +196,16 @@ Question:
 {question}
 """
 
-    groq_key = os.getenv("GROQ_API_KEY")
-    if not groq_key:
-        yield "Error: GROQ_API_KEY is not configured in the environment variables."
-        return
+        groq_key = os.getenv("GROQ_API_KEY")
+        if not groq_key:
+            yield "Error: GROQ_API_KEY is not configured in the environment variables."
+            return
 
-    try:
         yield "[System: Generating answer using Groq...]\n"
         yield from stream_groq(prompt, groq_key)
-    except Exception as groq_err:
-        logger.error(f"Groq generation failed: {groq_err}")
-        yield f"\n[Error: Groq generation failed: {str(groq_err)}]"
+    except Exception as e:
+        logger.error(f"Error during RAG execution: {e}", exc_info=True)
+        yield f"\n[Backend Error: {str(e)}]"
 
 # ---------------- ROUTE HANDLERS ----------------
 @app.post("/ask")
