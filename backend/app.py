@@ -9,6 +9,7 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
+from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 
@@ -29,40 +30,13 @@ app.add_middleware(
 )
 
 # ---------------- EMBEDDINGS ----------------
-class GroqEmbeddings:
-    """
-    Custom LangChain-compatible embeddings class calling Groq's nomic-embed-text-v1.5 API.
-    """
-    def __init__(self):
-        self.url = "https://api.groq.com/openai/v1/embeddings"
-
-    def _embed(self, texts: List[str]) -> List[List[float]]:
-        api_key = os.getenv("GROQ_API_KEY")
-        if not api_key:
-            raise Exception("GROQ_API_KEY environment variable is missing.")
-        
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
-        }
-        payload = {
-            "input": texts,
-            "model": "nomic-embed-text-v1.5"
-        }
-        with httpx.Client() as client:
-            response = client.post(self.url, headers=headers, json=payload, timeout=30.0)
-            if response.status_code != 200:
-                raise Exception(f"Groq embedding failed: {response.text}")
-            data = response.json()
-            return [item["embedding"] for item in data["data"]]
-
-    def embed_documents(self, texts: List[str]) -> List[List[float]]:
-        return self._embed(texts)
-
-    def embed_query(self, text: str) -> List[float]:
-        return self._embed([text])[0]
-
-embedding_model = GroqEmbeddings()
+# We use HuggingFaceInferenceAPIEmbeddings to run the embedding model remotely.
+# This requires 0MB of local RAM on Render, preventing Out of Memory crashes.
+# Note: You can optionally add a free HUGGINGFACEHUB_API_TOKEN in Render env vars for higher rate limits.
+embedding_model = HuggingFaceInferenceAPIEmbeddings(
+    api_key=os.getenv("HUGGINGFACEHUB_API_TOKEN"),
+    model_name="sentence-transformers/all-MiniLM-L6-v2"
+)
 
 # ---------------- GROQ STREAMING ----------------
 def stream_groq(prompt: str, api_key: str):
